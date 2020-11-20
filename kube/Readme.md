@@ -40,6 +40,43 @@ The Deployment component of Kubernetes specifies the blueprint of your applicati
 ## StatefulSet
 StatefulSet component is used when your application needs to manage stateful information. For example, if you are hosting a database application in your Kubernetes cluster, using a deployment component is just not enough because all the changes/updates made to your database should be synced across all the instances. This is where Statefulset comes into play. The Stateful set not only manages the replication but also manages the data synchronization.
 
+# Architecture of Kubernetes
+![Kubernates Architechture](https://miro.medium.com/max/1050/1*iaQlYvTG7NhAjlu9sdXNyA.png)
 
+Kubernetes also follows a Master-Slaves architecture
+## Master
+Master is the controlling element of the cluster. It is the only endpoint that is open to the users of the cluster. For the purpose of fault-tolerance, one cluster may have multiple masters. Master has the following 4 parts:
 
+### 1. API server
+This is the front end that communicates with the user. It is a REST-based API that is designed to consume JSON inputs. As a default, it runs in port 443.
+### 2. Scheduler
+Scheduler watches API server for new Pod requests. It communicates with Nodes to create new pods and to assign work to nodes while allocating resources or imposing constraints.
+### 3. Cluster store
+Cluster store is a persistent storage holding cluster states and configuration details. It uses ETCD (open-source distributed key-value store) to store these data.
+### 4. Controller
+Includes Node controller, Endpoint Controller, Namespace Controller, etc.
 
+## Nodes (Slaves/Minions)
+Nodes are the workers. They are the ones that do all the “Work” assigned to the cluster. Inside a Node, there are 3main components, apart from the “Pods” (I will talk about Pods later on). Those 3 parts are :
+
+### 1. Kubelet
+Kublets do a lot of work inside a Node. They register the nodes with the cluster, watch for work assignments from the scheduler, instantiate new Pods, report back to the master, etc.
+### 2. Container Engine
+Container Engine is the responsible person for managing containers. It does all the image pulling, container stopping, starting, etc. Most widely used container engine is Docker. However, you can also use Rocket for this.
+### 3. Kube Proxy
+Kube Proxy is responsible for assigning IP addresses per pod. Each time a pod creates, a new IP address will be allocated for that pod. Kube Proxy also does the Loadbalancing work.
+Apart from those mentioned components, Nodes have their own default pods like logging, health checking, DNS, etc. Each node expose 3 read-only endpoints through (usually) localhost:10255. Those endpoints are,
+`/specs`
+`/healthz`
+`/pods`
+
+# Services types
+There are 5 types of Services available in Kuberntes which we can choose according to our purpose: 
+### 1. ClusterIP
+Exposes the service on a cluster-internal IP. Choosing this value makes the service only reachable from within the cluster. This is the default `ServiceType`.
+### 2. NodePort
+Exposes the service on each Node’s IP at a static port (the NodePort). A ClusterIP service, to which the NodePort service will route, is automatically created. You’ll be able to contact the NodePort service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
+### 3. LoadBalancer
+Exposes the service externally using a cloud provider’s load balancer. NodePort and ClusterIP services, to which the external load balancer will route, are automatically created.
+### 4. ExternalName
+Maps the service to the contents of the `externalName` field (e.g. foo.bar.example.com), by returning a `CNAME` record with its value. No proxying of any kind is set up. This requires version 1.7 or higher of `kube-dns`

@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: movie-service
-          image: movie-service:1.0
-          imagePullPolicy: IfNotPresent
+          image: itssoumen/movie-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
